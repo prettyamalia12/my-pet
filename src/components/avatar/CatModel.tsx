@@ -29,6 +29,26 @@ function getToonGradient(): THREE.DataTexture {
   return toonGradient;
 }
 
+/**
+ * Tail built as a chain of overlapping spheres along an S-curve — sweeps out
+ * from the lower back and curls upward. Reads clearly from front, side, and rear.
+ * [x, y, z, radius] per segment.
+ */
+const TAIL_SEGMENTS: [number, number, number, number][] = [
+  [0.05, 0.6, -0.75, 0.19],
+  [-0.15, 0.52, -0.86, 0.19],
+  [-0.36, 0.47, -0.94, 0.185],
+  [-0.56, 0.48, -0.985, 0.18],
+  [-0.74, 0.58, -0.99, 0.175],
+  [-0.87, 0.73, -0.95, 0.17],
+  [-0.95, 0.9, -0.88, 0.165],
+  [-0.995, 1.08, -0.79, 0.155],
+  [-1.0, 1.26, -0.68, 0.145],
+  [-0.97, 1.43, -0.56, 0.135],
+  [-0.9, 1.57, -0.45, 0.125],
+  [-0.8, 1.68, -0.36, 0.11],
+];
+
 interface ToonPartProps {
   color: string;
   geometry: ReactNode;
@@ -88,7 +108,7 @@ export function CatModel({ config, animate }: CatModelProps) {
 
     // Slow tail sway.
     if (tailRef.current) {
-      tailRef.current.rotation.y = Math.sin(t * 0.9) * 0.18;
+      tailRef.current.rotation.y = Math.sin(t * 0.9) * 0.12;
     }
 
     // Occasional blink (~ every 4.2s the eyes squash for a moment).
@@ -130,14 +150,16 @@ export function CatModel({ config, animate }: CatModelProps) {
         />
       ))}
 
-      {/* Tail — thick curled arc peeking out from the side, sways gently */}
-      <group ref={tailRef} position={[-0.5, 0.55, -0.55]}>
-        <ToonPart
-          color={config.bodyColor}
-          position={[0.1, 0.35, -0.15]}
-          rotation={[0.3, 0, -0.9]}
-          geometry={<torusGeometry args={[0.5, 0.13, 14, 32, Math.PI * 1.25]} />}
-        />
+      {/* Tail — tapered sphere chain curling up behind the body, sways gently */}
+      <group ref={tailRef}>
+        {TAIL_SEGMENTS.map(([x, y, z, r], i) => (
+          <ToonPart
+            key={i}
+            color={config.bodyColor}
+            position={[x, y, z]}
+            geometry={<sphereGeometry args={[r, 24, 24]} />}
+          />
+        ))}
       </group>
 
       {/* Head — oversized for the chibi look */}

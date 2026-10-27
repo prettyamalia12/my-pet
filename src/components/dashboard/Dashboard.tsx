@@ -121,7 +121,7 @@ export function Dashboard() {
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Avatar hero panel */}
             <div className="space-y-6">
-              <div className="overflow-hidden rounded-3xl bg-gradient-to-b from-white to-cream-100 shadow-sm ring-1 ring-cocoa-700/5">
+              <div className="h-[420px] overflow-hidden rounded-3xl bg-gradient-to-b from-white to-cream-100 shadow-sm ring-1 ring-cocoa-700/5 sm:h-[480px] lg:h-[560px]">
                 <AvatarCanvas
                   key={selectedPet.id}
                   config={selectedPet.avatar}

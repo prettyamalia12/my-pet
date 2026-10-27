@@ -133,21 +133,36 @@ export function CatModel({ config, animate }: CatModelProps) {
         <ToonPart
           color={CREAM_COLOR}
           position={[0, -0.22, 0.58]}
-          scale={[0.95, 1.1, 0.5]}
+          scale={[0.7, 1.05, 0.5]}
           outline={false}
           geometry={<sphereGeometry args={[0.52, 32, 32]} />}
         />
       </group>
 
-      {/* Front paws */}
-      {([-0.33, 0.33] as const).map((x) => (
-        <ToonPart
-          key={x}
-          color={config.bodyColor}
-          position={[x, 0.16, 0.62]}
-          scale={[1, 0.75, 1.4]}
-          geometry={<sphereGeometry args={[0.2, 32, 32]} />}
-        />
+      {/* Front legs + paws, and hind feet peeking out at the sides */}
+      {([-1, 1] as const).map((side) => (
+        <group key={side}>
+          {/* Leg */}
+          <ToonPart
+            color={config.bodyColor}
+            position={[side * 0.34, 0.44, 0.6]}
+            geometry={<capsuleGeometry args={[0.14, 0.4, 8, 20]} />}
+          />
+          {/* Front paw */}
+          <ToonPart
+            color={config.bodyColor}
+            position={[side * 0.34, 0.15, 0.7]}
+            scale={[1, 0.7, 1.3]}
+            geometry={<sphereGeometry args={[0.19, 32, 32]} />}
+          />
+          {/* Hind foot */}
+          <ToonPart
+            color={config.bodyColor}
+            position={[side * 0.66, 0.16, 0.28]}
+            scale={[1.15, 0.65, 1.3]}
+            geometry={<sphereGeometry args={[0.17, 32, 32]} />}
+          />
+        </group>
       ))}
 
       {/* Tail — tapered sphere chain curling up behind the body, sways gently */}

@@ -1,0 +1,22 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Nunito', ui-rounded, system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  --color-cream-50: #fffaf3;
+  --color-cream-100: #fbf1e4;
+
+  --color-peach-100: #fde8d7;
+  --color-peach-300: #f9c89b;
+  --color-peach-400: #f6a96d;
+  --color-peach-500: #f08c4a;
+  --color-peach-600: #e1752f;
+
+  --color-cocoa-500: #8a6a52;
+  --color-cocoa-700: #5c4634;
+  --color-cocoa-900: #3b2d22;
+}
+
+body {
+  font-family: var(--font-sans);
+}

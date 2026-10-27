@@ -74,7 +74,7 @@ export function AvatarCanvas({ config, petName }: AvatarCanvasProps) {
             dampingFactor={0.08}
             minPolarAngle={0.9}
             maxPolarAngle={1.6}
-            minDistance={3.6}
+            minDistance={3.9}
             maxDistance={8}
             target={[0, 1.5, 0]}
           />

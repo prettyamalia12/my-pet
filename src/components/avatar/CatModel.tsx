@@ -5,9 +5,9 @@ import type { AvatarConfig } from '../../types';
 
 const INNER_EAR_COLOR = '#f3b3ac';
 const NOSE_COLOR = '#e58a8a';
-const CREAM_COLOR = '#fff6ea';
+const CREAM_COLOR = '#fdf0dd';
 const BLUSH_COLOR = '#f6a89e';
-const WHISKER_COLOR = '#fffdf7';
+const WHISKER_COLOR = '#8a6f5c';
 const PUPIL_COLOR = '#2b2118';
 const OUTLINE_COLOR = '#4a3428';
 const COLLAR_COLOR = '#e26d5c';
@@ -112,10 +112,10 @@ export function CatModel({ config, animate }: CatModelProps) {
         {/* Cream belly patch */}
         <ToonPart
           color={CREAM_COLOR}
-          position={[0, -0.18, 0.55]}
-          scale={[1.05, 1.25, 0.55]}
+          position={[0, -0.22, 0.58]}
+          scale={[0.95, 1.1, 0.5]}
           outline={false}
-          geometry={<sphereGeometry args={[0.55, 32, 32]} />}
+          geometry={<sphereGeometry args={[0.52, 32, 32]} />}
         />
       </group>
 
@@ -146,14 +146,14 @@ export function CatModel({ config, animate }: CatModelProps) {
 
         {/* Ears (outer + pink inner) */}
         {([-1, 1] as const).map((side) => (
-          <group key={side} position={[side * 0.46, 0.56, -0.02]} rotation={[0, 0, side * -0.24]}>
-            <ToonPart color={config.bodyColor} geometry={<coneGeometry args={[0.3, 0.6, 24]} />} />
+          <group key={side} position={[side * 0.44, 0.6, -0.02]} rotation={[0, 0, side * -0.28]}>
+            <ToonPart color={config.bodyColor} geometry={<coneGeometry args={[0.34, 0.72, 24]} />} />
             <ToonPart
               color={INNER_EAR_COLOR}
-              position={[0, -0.07, 0.13]}
+              position={[0, -0.08, 0.14]}
               scale={[0.55, 0.6, 0.35]}
               outline={false}
-              geometry={<coneGeometry args={[0.3, 0.6, 24]} />}
+              geometry={<coneGeometry args={[0.34, 0.72, 24]} />}
             />
           </group>
         ))}
@@ -219,7 +219,7 @@ export function CatModel({ config, animate }: CatModelProps) {
               position={[side * 0.72, -0.14 + yOff, 0.45]}
               rotation={[0, side * -0.35, Math.PI / 2 + side * (0.06 - i * 0.06)]}
             >
-              <cylinderGeometry args={[0.008, 0.008, 0.55, 6]} />
+              <cylinderGeometry args={[0.01, 0.01, 0.55, 6]} />
               <meshBasicMaterial color={WHISKER_COLOR} />
             </mesh>
           )),

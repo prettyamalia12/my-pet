@@ -14,15 +14,6 @@ interface AvatarCanvasProps {
   petName: string;
 }
 
-function GroundDisc() {
-  return (
-    <mesh position={[0, -0.01, 0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
-      <circleGeometry args={[2.4, 48]} />
-      <meshStandardMaterial color="#f3e2cd" roughness={0.95} />
-    </mesh>
-  );
-}
-
 export function AvatarCanvas({ config, petName }: AvatarCanvasProps) {
   const controlsRef = useRef<OrbitControlsImpl>(null);
   const reducedMotion = useReducedMotion();
@@ -34,11 +25,16 @@ export function AvatarCanvas({ config, petName }: AvatarCanvasProps) {
 
   return (
     <div className="relative h-full min-h-72 w-full sm:min-h-96">
+      {/* Soft pastel backdrop circle behind the avatar */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_62%,#ffe4cd_0%,#fff3e6_45%,transparent_72%)]"
+      />
       <AvatarErrorBoundary fallback={<AvatarFallback config={config} name={petName} />}>
         <Canvas
           shadows
           dpr={[1, 2]}
-          camera={{ position: [0, 2.2, 5.4], fov: 40 }}
+          camera={{ position: [0, 2.0, 4.6], fov: 40 }}
           aria-label={`Interactive 3D avatar of ${petName}. Drag to rotate.`}
         >
           {/* Warm studio lights — no HDR downloads, works fully offline. */}
@@ -54,7 +50,6 @@ export function AvatarCanvas({ config, petName }: AvatarCanvasProps) {
           <directionalLight position={[-5, 4, -4]} intensity={0.4} />
           <Suspense fallback={null}>
             <CatModel config={config} animate={!reducedMotion} />
-            <GroundDisc />
           </Suspense>
           <ContactShadows
             position={[0, 0.005, 0]}

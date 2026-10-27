@@ -38,7 +38,7 @@ export function AvatarCanvas({ config, petName }: AvatarCanvasProps) {
         <Canvas
           shadows
           dpr={[1, 2]}
-          camera={{ position: [0, 2.1, 4.8], fov: 38 }}
+          camera={{ position: [0, 2.2, 5.4], fov: 40 }}
           aria-label={`Interactive 3D avatar of ${petName}. Drag to rotate.`}
         >
           {/* Simple studio lights — no HDR downloads, works fully offline. */}
@@ -63,9 +63,9 @@ export function AvatarCanvas({ config, petName }: AvatarCanvasProps) {
             dampingFactor={0.08}
             minPolarAngle={0.9}
             maxPolarAngle={1.6}
-            minDistance={2.6}
-            maxDistance={7.5}
-            target={[0, 1.4, 0]}
+            minDistance={3.6}
+            maxDistance={8}
+            target={[0, 1.5, 0]}
           />
         </Canvas>
       </AvatarErrorBoundary>

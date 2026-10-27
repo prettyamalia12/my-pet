@@ -1,6 +1,6 @@
 import { Suspense, useRef } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls } from '@react-three/drei';
+import { ContactShadows, OrbitControls } from '@react-three/drei';
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib';
 import type { AvatarConfig } from '../../types';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
@@ -41,20 +41,31 @@ export function AvatarCanvas({ config, petName }: AvatarCanvasProps) {
           camera={{ position: [0, 2.2, 5.4], fov: 40 }}
           aria-label={`Interactive 3D avatar of ${petName}. Drag to rotate.`}
         >
-          {/* Simple studio lights — no HDR downloads, works fully offline. */}
-          <ambientLight intensity={0.75} />
+          {/* Warm studio lights — no HDR downloads, works fully offline. */}
+          <ambientLight intensity={0.55} />
+          <hemisphereLight args={['#fff4e0', '#e6cbb0', 0.5]} />
           <directionalLight
             position={[4, 7, 5]}
-            intensity={1.15}
+            intensity={1.1}
             castShadow
             shadow-mapSize-width={1024}
             shadow-mapSize-height={1024}
           />
-          <directionalLight position={[-5, 4, -4]} intensity={0.35} />
+          <directionalLight position={[-5, 4, -4]} intensity={0.4} />
           <Suspense fallback={null}>
             <CatModel config={config} animate={!reducedMotion} />
             <GroundDisc />
           </Suspense>
+          <ContactShadows
+            position={[0, 0.005, 0]}
+            opacity={0.4}
+            scale={5.5}
+            blur={2.5}
+            far={2.5}
+            resolution={256}
+            color="#7a5b40"
+            frames={reducedMotion ? 1 : Infinity}
+          />
           <OrbitControls
             ref={controlsRef}
             makeDefault

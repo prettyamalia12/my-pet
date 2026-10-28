@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { AvatarConfig } from '../../types';
 
 const OUTLINE_SOFT = '#e9c9a4';
-const LEG_LINE = '#eccfae';
+const LEG_LINE = '#e8c39c';
 const BEAN = '#f2a0a0';
 const INNER_EAR = '#f9c8c2';
 const NOSE = '#f28b9a';
@@ -127,23 +127,19 @@ export function Avatar2D({ config, petName }: Avatar2DProps) {
             />
             <ellipse cx="240" cy="302" rx="25" ry="34" fill={patchBody} transform="rotate(12 240 302)" />
 
-            {/* Front leg hint lines + paws with toe beans */}
-            <rect x="163" y="268" width="26" height="84" rx="13" fill={config.bodyColor} stroke={LEG_LINE} strokeWidth="3" />
-            <rect x="211" y="268" width="26" height="84" rx="13" fill={config.bodyColor} stroke={LEG_LINE} strokeWidth="3" />
-            <ellipse cx="180" cy="349" rx="16" ry="10" fill={config.bodyColor} stroke={LEG_LINE} strokeWidth="3" />
-            <ellipse cx="220" cy="349" rx="16" ry="10" fill={config.bodyColor} stroke={LEG_LINE} strokeWidth="3" />
-            <circle cx="176" cy="349" r="1.6" fill={BEAN} />
-            <circle cx="184" cy="349" r="1.6" fill={BEAN} />
-            <circle cx="216" cy="349" r="1.6" fill={BEAN} />
-            <circle cx="224" cy="349" r="1.6" fill={BEAN} />
+            {/* Front leg seams flowing from the chest into rounded paw bumps */}
+            <path d="M 178 258 C 173 290 174 312 177 328" fill="none" stroke={LEG_LINE} strokeWidth="4" strokeLinecap="round" />
+            <path d="M 222 258 C 227 290 226 312 223 328" fill="none" stroke={LEG_LINE} strokeWidth="4" strokeLinecap="round" />
+            <path d="M 160 353 Q 160 333 178 333 Q 196 333 196 353 Z" fill={config.bodyColor} stroke={LEG_LINE} strokeWidth="3" strokeLinejoin="round" />
+            <path d="M 204 353 Q 204 333 222 333 Q 240 333 240 353 Z" fill={config.bodyColor} stroke={LEG_LINE} strokeWidth="3" strokeLinejoin="round" />
+            <circle cx="171" cy="346" r="1.8" fill={BEAN} />
+            <circle cx="178" cy="343.5" r="1.8" fill={BEAN} />
+            <circle cx="185" cy="346" r="1.8" fill={BEAN} />
+            <circle cx="215" cy="346" r="1.8" fill={BEAN} />
+            <circle cx="222" cy="343.5" r="1.8" fill={BEAN} />
+            <circle cx="229" cy="346" r="1.8" fill={BEAN} />
 
-            {/* Ears — the left one wears the patch color */}
-            <path d="M 128 118 L 112 38 Q 110 27 121 30 L 178 62 Z" fill={patchStrong} stroke={OUTLINE_SOFT} strokeWidth="3" strokeLinejoin="round" />
-            <path d="M 132 96 L 123 52 L 156 68 Z" fill={INNER_EAR} />
-            <path d="M 276 126 L 292 34 Q 295 24 285 27 L 220 58 Z" fill={config.bodyColor} stroke={OUTLINE_SOFT} strokeWidth="3" strokeLinejoin="round" />
-            <path d="M 268 96 L 279 48 L 240 66 Z" fill={INNER_EAR} />
-
-            {/* Collar under the chin (head overlaps its top edge) */}
+            {/* Collar before the head so the chin tucks over it */}
             {config.collar && (
               <g>
                 <path d="M 142 224 Q 200 254 258 226" fill="none" stroke={OUTLINE_SOFT} strokeWidth="19" strokeLinecap="round" />
@@ -151,10 +147,26 @@ export function Avatar2D({ config, petName }: Avatar2DProps) {
               </g>
             )}
 
-            {/* Head */}
-            <circle cx="200" cy="150" r="88" fill={config.bodyColor} stroke={OUTLINE_SOFT} strokeWidth="3.5" />
+            {/* Head fill (no stroke — the outline is drawn as arcs below) */}
+            <circle cx="200" cy="150" r="88" fill={config.bodyColor} />
             <circle cx="200" cy="150" r="88" fill="url(#fur-light)" />
+
+            {/* Ears over the head: fill reaches deep inside, edge strokes stop at the head circle */}
+            <path d="M 126 124 L 111 36 Q 109 25 120 28 L 186 70 Z" fill={patchStrong} />
+            <path d="M 123.1 107.2 L 111 36 Q 109 25 120 28" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3" strokeLinecap="round" />
+            <path d="M 120 28 L 175.8 65.4" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3" strokeLinecap="round" />
+            <path d="M 136 88 L 125 50 L 158 64 Z" fill={INNER_EAR} />
+            <path d="M 274 132 L 291 32 Q 294 22 284 25 L 212 74 Z" fill={config.bodyColor} />
+            <path d="M 277.9 109.1 L 291 32 Q 294 22 284 25" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3" strokeLinecap="round" />
+            <path d="M 284 25 L 226.8 66.2" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3" strokeLinecap="round" />
+            <path d="M 258 88 L 273 48 L 240 64 Z" fill={INNER_EAR} />
+
+            {/* Forehead patch after the ears so it blends the ear base */}
             <path d="M 117 152 C 110 100 139 64 182 61 C 166 90 161 122 164 152 C 150 161 129 162 117 152 Z" fill={patchHead} />
+
+            {/* Head outline arcs bridging into the ears */}
+            <path d="M 172.8 66.3 A 88 88 0 0 1 230.1 67.3" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3.5" strokeLinecap="round" />
+            <path d="M 274.6 103.4 A 88 88 0 1 1 126.2 102.1" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3.5" strokeLinecap="round" />
 
             {/* Eyes */}
             <g className="avatar-blink">

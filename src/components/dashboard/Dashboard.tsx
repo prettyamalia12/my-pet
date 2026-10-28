@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import type { Pet, PetFormValues } from '../../types';
 import { usePets } from '../../hooks/pets-context';
 import { derivePetStatus } from '../../lib/status';
-import { AvatarCanvas } from '../avatar/AvatarCanvas';
+import { Avatar2D } from '../avatar/Avatar2D';
 import { AvatarCustomizer } from '../avatar/AvatarCustomizer';
 import { PetSwitcher } from '../pets/PetSwitcher';
 import { PetForm } from '../pets/PetForm';
@@ -122,7 +122,7 @@ export function Dashboard() {
             {/* Avatar hero panel */}
             <div className="space-y-6">
               <div className="h-[420px] overflow-hidden rounded-3xl bg-gradient-to-b from-white to-cream-100 shadow-sm ring-1 ring-cocoa-700/5 sm:h-[480px] lg:h-[560px]">
-                <AvatarCanvas
+                <Avatar2D
                   key={selectedPet.id}
                   config={selectedPet.avatar}
                   petName={selectedPet.name}

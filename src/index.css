@@ -20,3 +20,49 @@
 body {
   font-family: var(--font-sans);
 }
+
+/* 2D avatar idle animations — only run when reduced motion is NOT requested */
+@keyframes avatar-bob {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes avatar-blink {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.08);
+  }
+}
+
+@keyframes avatar-tail {
+  from {
+    transform: rotate(-3deg);
+  }
+  to {
+    transform: rotate(4deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .avatar-bob {
+    animation: avatar-bob 2.6s ease-in-out infinite alternate;
+  }
+  .avatar-blink {
+    animation: avatar-blink 4.4s ease-in-out infinite;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .avatar-tail {
+    animation: avatar-tail 2.2s ease-in-out infinite alternate;
+    transform-box: fill-box;
+    transform-origin: 100% 100%;
+  }
+}

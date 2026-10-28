@@ -1,6 +1,6 @@
 export const BODY_COLORS = [
-  { value: '#f2dfc8', label: 'Cream' },
-  { value: '#e8a25f', label: 'Ginger' },
+  { value: '#fdf8f0', label: 'Snow' },
+  { value: '#ed9752', label: 'Ginger' },
   { value: '#9aa5b1', label: 'Misty grey' },
   { value: '#5c534e', label: 'Cocoa' },
 ] as const;

@@ -21,7 +21,7 @@ export function createSamplePet(): Pet {
     weightKg: 4.2,
     notes: 'Loves cardboard boxes and sunbeams. Fussy about wet food.',
     avatar: {
-      bodyColor: '#f2dfc8',
+      bodyColor: '#ed9752',
       eyeColor: '#d9a441',
       collar: true,
       bow: false,

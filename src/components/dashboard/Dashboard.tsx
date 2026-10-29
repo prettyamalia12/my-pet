@@ -28,6 +28,8 @@ function formValuesToPet(values: PetFormValues, base?: Pet): Omit<Pet, 'id'> {
     notes: values.notes.trim() || undefined,
     avatar: base?.avatar ?? {
       bodyColor: '#f2dfc8',
+      secondaryColor: '#c47837',
+      accentColor: '#4a4a55',
       eyeColor: '#d9a441',
       collar: false,
       bow: false,

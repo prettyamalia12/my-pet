@@ -86,6 +86,8 @@ export function isPet(value: unknown): value is Pet {
   const avatar = value.avatar;
   if (!isRecord(avatar)) return false;
   if (typeof avatar.bodyColor !== 'string') return false;
+  if (!isOptionalString(avatar.secondaryColor)) return false;
+  if (!isOptionalString(avatar.accentColor)) return false;
   if (typeof avatar.eyeColor !== 'string') return false;
   if (typeof avatar.collar !== 'boolean') return false;
   if (typeof avatar.bow !== 'boolean') return false;

@@ -5,6 +5,10 @@ export type StockUnit = 'g' | 'kg';
 
 export interface AvatarConfig {
   bodyColor: string;
+  /** Secondary coat color used by the patch zones (ear, forehead, body). */
+  secondaryColor?: string;
+  /** Tertiary accent color used by the tail tip, ear tip, and belly spot. */
+  accentColor?: string;
   eyeColor: string;
   collar: boolean;
   bow: boolean;

@@ -27,6 +27,7 @@ function formValuesToPet(values: PetFormValues, base?: Pet): Omit<Pet, 'id'> {
     weightKg: values.weightKg.trim().length > 0 ? Number(values.weightKg) : undefined,
     notes: values.notes.trim() || undefined,
     avatar: base?.avatar ?? {
+      breed: 'british-shorthair',
       bodyColor: '#f2dfc8',
       secondaryColor: '#c47837',
       accentColor: '#4a4a55',

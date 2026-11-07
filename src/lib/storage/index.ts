@@ -88,6 +88,7 @@ export function isPet(value: unknown): value is Pet {
   if (typeof avatar.bodyColor !== 'string') return false;
   if (!isOptionalString(avatar.secondaryColor)) return false;
   if (!isOptionalString(avatar.accentColor)) return false;
+  if (!isOptionalString(avatar.breed)) return false;
   if (typeof avatar.eyeColor !== 'string') return false;
   if (typeof avatar.collar !== 'boolean') return false;
   if (typeof avatar.bow !== 'boolean') return false;

@@ -9,6 +9,8 @@ export interface AvatarConfig {
   secondaryColor?: string;
   /** Tertiary accent color used by the tail tip, ear tip, and belly spot. */
   accentColor?: string;
+  /** Cat breed preset; drives shape traits and default coat colors. */
+  breed?: string;
   eyeColor: string;
   collar: boolean;
   bow: boolean;

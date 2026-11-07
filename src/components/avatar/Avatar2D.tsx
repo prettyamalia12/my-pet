@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import type { AvatarConfig } from '../../types';
+import { CAT_BREEDS, DEFAULT_BREED } from './avatar-options';
 
 const OUTLINE_SOFT = '#e9c9a4';
 const LEG_LINE = '#e8c39c';
@@ -46,6 +47,17 @@ export function Avatar2D({ config, petName }: Avatar2DProps) {
   const secondary = config.secondaryColor ?? (dark ? '#ffffff' : '#c47837');
   const accent = config.accentColor ?? (dark ? '#ffffff' : secondary);
   const furLight = dark ? 'rgba(255,255,255,0.28)' : 'rgba(255,255,255,0.5)';
+
+  const breed = CAT_BREEDS.find((b) => b.id === config.breed) ?? DEFAULT_BREED;
+  const patched = breed.pattern === 'patch';
+  const pointed = breed.pattern === 'points';
+  const earColor = pointed ? accent : secondary;
+  const buildTransform =
+    breed.build === 'short'
+      ? 'translate(200 370) scale(1 0.8) translate(-200 -370)'
+      : breed.build === 'slender'
+        ? 'translate(200 180) scale(0.9 1.03) translate(-200 -180)'
+        : undefined;
 
   const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     dragStartX.current = e.clientX;
@@ -97,6 +109,8 @@ export function Avatar2D({ config, petName }: Avatar2DProps) {
               </filter>
             </defs>
 
+            <g transform={buildTransform}>
+
             {/* Sparkles */}
             <g fill={SPARKLE}>
               <path d="M 78 118 Q 80 124 86 126 Q 80 128 78 134 Q 76 128 70 126 Q 76 124 78 118 Z" />
@@ -110,7 +124,9 @@ export function Avatar2D({ config, petName }: Avatar2DProps) {
             {/* Tail curling up beside the body, patched tip */}
             <path d="M 258 322 C 328 312 352 264 331 236 C 318 220 299 226 302 244" fill="none" stroke={OUTLINE_SOFT} strokeWidth="32" strokeLinecap="round" />
             <path d="M 258 322 C 328 312 352 264 331 236 C 318 220 299 226 302 244" fill="none" stroke={config.bodyColor} strokeWidth="25" strokeLinecap="round" />
-            <path d="M 331 236 C 318 220 299 226 302 244" fill="none" stroke={accent} strokeOpacity="0.75" strokeWidth="25" strokeLinecap="round" />
+            {breed.pattern !== 'solid' && (
+              <path d="M 331 236 C 318 220 299 226 302 244" fill="none" stroke={accent} strokeOpacity="0.75" strokeWidth="25" strokeLinecap="round" />
+            )}
 
             {/* Chubby body */}
             <path
@@ -123,8 +139,12 @@ export function Avatar2D({ config, petName }: Avatar2DProps) {
               d="M 200 190 C 148 195 124 250 130 300 C 135 340 165 353 200 353 C 235 353 265 340 270 300 C 276 250 252 195 200 190 Z"
               fill="url(#fur-light)"
             />
-            <ellipse cx="240" cy="302" rx="25" ry="34" fill={secondary} fillOpacity="0.4" transform="rotate(12 240 302)" />
-            <ellipse cx="164" cy="316" rx="15" ry="19" fill={accent} fillOpacity="0.45" transform="rotate(-10 164 316)" />
+            {patched && (
+              <g>
+                <ellipse cx="240" cy="302" rx="25" ry="34" fill={secondary} fillOpacity="0.4" transform="rotate(12 240 302)" />
+                <ellipse cx="164" cy="316" rx="15" ry="19" fill={accent} fillOpacity="0.45" transform="rotate(-10 164 316)" />
+              </g>
+            )}
 
             {/* Front leg seams flowing from the chest into rounded paw bumps */}
             <path d="M 178 258 C 173 290 174 312 177 328" fill="none" stroke={LEG_LINE} strokeWidth="4" strokeLinecap="round" />
@@ -151,18 +171,22 @@ export function Avatar2D({ config, petName }: Avatar2DProps) {
             <circle cx="200" cy="150" r="88" fill="url(#fur-light)" />
 
             {/* Ears over the head: fill reaches deep inside, edge strokes stop at the head circle */}
-            <path d="M 126 124 L 111 36 Q 109 25 120 28 L 186 70 Z" fill={secondary} fillOpacity="0.85" />
+            <path d="M 126 124 L 111 36 Q 109 25 120 28 L 186 70 Z" fill={earColor} fillOpacity="0.85" />
             <path d="M 123.1 107.2 L 111 36 Q 109 25 120 28" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3" strokeLinecap="round" />
             <path d="M 120 28 L 175.8 65.4" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3" strokeLinecap="round" />
             <path d="M 136 88 L 125 50 L 158 64 Z" fill={INNER_EAR} />
             <path d="M 274 132 L 291 32 Q 294 22 284 25 L 212 74 Z" fill={config.bodyColor} />
             <path d="M 277.9 109.1 L 291 32 Q 294 22 284 25" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3" strokeLinecap="round" />
             <path d="M 284 25 L 226.8 66.2" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3" strokeLinecap="round" />
-            <path d="M 281 46 L 292 26" fill="none" stroke={accent} strokeOpacity="0.9" strokeWidth="8" strokeLinecap="round" />
+            {patched && (
+              <path d="M 281 46 L 292 26" fill="none" stroke={accent} strokeOpacity="0.9" strokeWidth="8" strokeLinecap="round" />
+            )}
             <path d="M 258 88 L 273 48 L 240 64 Z" fill={INNER_EAR} />
 
             {/* Forehead patch after the ears so it blends the ear base */}
-            <path d="M 117 152 C 110 100 139 64 182 61 C 166 90 161 122 164 152 C 150 161 129 162 117 152 Z" fill={secondary} fillOpacity="0.5" />
+            {patched && (
+              <path d="M 117 152 C 110 100 139 64 182 61 C 166 90 161 122 164 152 C 150 161 129 162 117 152 Z" fill={secondary} fillOpacity="0.5" />
+            )}
 
             {/* Head outline arcs bridging into the ears */}
             <path d="M 172.8 66.3 A 88 88 0 0 1 230.1 67.3" fill="none" stroke={OUTLINE_SOFT} strokeWidth="3.5" strokeLinecap="round" />
@@ -215,6 +239,7 @@ export function Avatar2D({ config, petName }: Avatar2DProps) {
                 <circle cx="122" cy="36" r="7" fill={BOW_CENTER} />
               </g>
             )}
+            </g>
           </svg>
         </div>
       </div>

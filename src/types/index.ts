@@ -16,12 +16,21 @@ export interface AvatarConfig {
   bow: boolean;
 }
 
+export interface StockLogEntry {
+  /** ISO timestamp of when the stock reading was recorded. */
+  at: string;
+  /** Stock converted to grams. */
+  stockGrams: number;
+}
+
 export interface FoodStock {
   stockAmount: number;
   stockUnit: StockUnit;
   dailyConsumptionGrams: number | null;
   /** ISO timestamp of when the stock amount was last confirmed by the user. */
   updatedAt: string;
+  /** Chronological stock readings (grams); one entry is appended on every food update. */
+  log?: StockLogEntry[];
 }
 
 export interface CareEvent {

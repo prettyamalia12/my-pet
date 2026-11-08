@@ -6,6 +6,11 @@ import {
 } from 'react';
 import type { FoodStock, Pet, StockUnit } from '../../types';
 import { formatDate } from '../../lib/age';
+import {
+  consumptionFromBagDuration,
+  estimateDailyConsumption,
+  toGrams,
+} from '../../lib/food-calculations';
 
 export interface FoodCardHandle {
   openForm: () => void;
@@ -31,7 +36,16 @@ export const FoodCard = forwardRef<FoodCardHandle, FoodCardProps>(function FoodC
   const [consumption, setConsumption] = useState(
     pet.food.dailyConsumptionGrams !== null ? String(pet.food.dailyConsumptionGrams) : '',
   );
+  const [bagAmount, setBagAmount] = useState(String(pet.food.stockAmount));
+  const [bagUnit, setBagUnit] = useState<StockUnit>(pet.food.stockUnit);
+  const [lastsDays, setLastsDays] = useState('');
   const [error, setError] = useState<string | null>(null);
+
+  const estimate = estimateDailyConsumption(pet.food.log);
+  const bagRate =
+    bagAmount.trim() === '' || lastsDays.trim() === ''
+      ? null
+      : consumptionFromBagDuration(toGrams(Number(bagAmount), bagUnit), Number(lastsDays));
 
   const openForm = () => {
     setStockAmount(String(pet.food.stockAmount));
@@ -150,6 +164,71 @@ export const FoodCard = forwardRef<FoodCardHandle, FoodCardProps>(function FoodC
               Not sure? Weigh the bowl before and after a day, or check the feeding guide
               on the bag. Leave empty if unknown — we won't guess.
             </p>
+            {estimate !== null && consumption.trim() === '' && (
+              <div className="mt-2 flex items-center justify-between gap-3 rounded-xl bg-peach-100/70 px-3 py-2">
+                <p className="text-xs font-semibold text-cocoa-700">
+                  From your last check-ins, {pet.name} eats about {Math.round(estimate)} g/day.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setConsumption(String(Math.round(estimate)))}
+                  className="shrink-0 rounded-lg bg-peach-500 px-3 py-1.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-peach-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-500"
+                >
+                  Use estimate
+                </button>
+              </div>
+            )}
+            {consumption.trim() === '' && (
+              <div className="mt-2 rounded-xl bg-cream-100 px-3 py-2">
+                <p className="text-xs font-bold text-cocoa-700">
+                  No scale? Estimate from the bag instead.
+                </p>
+                <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-cocoa-700">
+                  <span>A bag of</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="any"
+                    inputMode="decimal"
+                    value={bagAmount}
+                    onChange={(e) => setBagAmount(e.target.value)}
+                    aria-label="Bag size"
+                    className="w-20 rounded-lg border border-cocoa-700/15 bg-white px-2 py-1 text-xs text-cocoa-900 focus:border-peach-500 focus:outline-none"
+                  />
+                  <select
+                    value={bagUnit}
+                    onChange={(e) => setBagUnit(e.target.value as StockUnit)}
+                    aria-label="Bag unit"
+                    className="rounded-lg border border-cocoa-700/15 bg-white px-1.5 py-1 text-xs text-cocoa-900 focus:border-peach-500 focus:outline-none"
+                  >
+                    <option value="g">g</option>
+                    <option value="kg">kg</option>
+                  </select>
+                  <span>lasts</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step="any"
+                    inputMode="decimal"
+                    value={lastsDays}
+                    onChange={(e) => setLastsDays(e.target.value)}
+                    aria-label="Days a bag lasts"
+                    placeholder="e.g. 21"
+                    className="w-16 rounded-lg border border-cocoa-700/15 bg-white px-2 py-1 text-xs text-cocoa-900 focus:border-peach-500 focus:outline-none"
+                  />
+                  <span>days</span>
+                  {bagRate !== null && (
+                    <button
+                      type="button"
+                      onClick={() => setConsumption(String(bagRate))}
+                      className="ml-auto rounded-lg bg-peach-500 px-3 py-1.5 text-xs font-extrabold text-white shadow-sm transition hover:bg-peach-600 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-peach-500"
+                    >
+                      Use {bagRate} g/day
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
           {error && (
             <p className="rounded-xl bg-red-50 px-3 py-2 text-xs font-semibold text-red-700" role="alert">
@@ -185,7 +264,9 @@ export const FoodCard = forwardRef<FoodCardHandle, FoodCardProps>(function FoodC
             <dd className="font-bold text-cocoa-900">
               {pet.food.dailyConsumptionGrams !== null
                 ? `${pet.food.dailyConsumptionGrams} g/day`
-                : 'not set'}
+                : estimate !== null
+                  ? `not set (check-ins suggest ~${Math.round(estimate)} g/day)`
+                  : 'not set'}
             </dd>
           </div>
           <div className="flex justify-between">

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { Pet, PetFormValues } from '../../types';
 import { usePets } from '../../hooks/pets-context';
 import { derivePetStatus } from '../../lib/status';
+import { appendStockLogEntry, toGrams } from '../../lib/food-calculations';
 import { Avatar2D } from '../avatar/Avatar2D';
 import { AvatarCustomizer } from '../avatar/AvatarCustomizer';
 import { PetSwitcher } from '../pets/PetSwitcher';
@@ -157,7 +158,21 @@ export function Dashboard() {
                   key={selectedPet.id}
                   ref={foodCardRef}
                   pet={selectedPet}
-                  onSave={(food) => updatePet(selectedPet.id, { food })}
+                  onSave={(food) => {
+                    const stockGrams = toGrams(food.stockAmount, food.stockUnit);
+                    updatePet(selectedPet.id, {
+                      food: {
+                        ...food,
+                        log:
+                          stockGrams === null
+                            ? food.log
+                            : appendStockLogEntry(selectedPet.food.log, {
+                                at: new Date().toISOString(),
+                                stockGrams,
+                              }),
+                      },
+                    });
+                  }}
                 />
               </div>
               <CareCard

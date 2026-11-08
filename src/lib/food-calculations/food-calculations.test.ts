@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  appendStockLogEntry,
+  consumptionFromBagDuration,
   daysRemaining,
+  estimateDailyConsumption,
   estimateRunOutDate,
   getFoodStatus,
   toGrams,
@@ -162,5 +165,125 @@ describe('getFoodStatus', () => {
         }),
       ).toBe('unknown');
     }
+  });
+});
+
+describe('estimateDailyConsumption', () => {
+  const now = new Date('2026-11-01T12:00:00Z');
+  const daysAgo = (days: number, grams: number) => ({
+    at: new Date(now.getTime() - days * 24 * 60 * 60 * 1000).toISOString(),
+    stockGrams: grams,
+  });
+
+  it('returns null without at least two readings', () => {
+    expect(estimateDailyConsumption(undefined, { now })).toBeNull();
+    expect(estimateDailyConsumption([], { now })).toBeNull();
+    expect(estimateDailyConsumption([daysAgo(3, 1000)], { now })).toBeNull();
+  });
+
+  it('estimates the drop over elapsed days for a simple pair', () => {
+    const log = [daysAgo(10, 1000), daysAgo(4, 700)];
+    expect(estimateDailyConsumption(log, { now })).toBe(50);
+  });
+
+  it('accumulates across multiple consuming segments', () => {
+    const log = [daysAgo(20, 2000), daysAgo(10, 1500), daysAgo(5, 1200)];
+    // 500 g over 10 days, then 300 g over 5 days → 800 g / 15 days
+    expect(estimateDailyConsumption(log, { now })).toBeCloseTo(53.3, 1);
+  });
+
+  it('treats a stock increase as a restock and breaks the chain', () => {
+    const log = [
+      daysAgo(20, 2000),
+      daysAgo(10, 1500), // consumed 500 g in 10 days
+      daysAgo(5, 2400), // restock — the 900 g jump says nothing about consumption
+      daysAgo(0, 2000), // consumed 400 g in 5 days
+    ];
+    expect(estimateDailyConsumption(log, { now })).toBeCloseTo(60, 1);
+  });
+
+  it('ignores flat readings without breaking the consuming chain', () => {
+    const log = [daysAgo(10, 1000), daysAgo(6, 1000), daysAgo(4, 800)];
+    // only the 200 g drop over 2 days counts
+    expect(estimateDailyConsumption(log, { now })).toBe(100);
+  });
+
+  it('returns null when the stock never decreased', () => {
+    const log = [daysAgo(10, 1000), daysAgo(5, 1200)];
+    expect(estimateDailyConsumption(log, { now })).toBeNull();
+  });
+
+  it('returns null when coverage is below the minimum', () => {
+    const log = [daysAgo(1, 1000), daysAgo(0.5, 900)];
+    expect(estimateDailyConsumption(log, { now })).toBeNull();
+    // but honors a lower custom minimum
+    expect(estimateDailyConsumption(log, { now, minDaysCovered: 0.25 })).toBe(200);
+  });
+
+  it('ignores readings outside the window', () => {
+    const log = [daysAgo(120, 3000), daysAgo(110, 2000), daysAgo(10, 900)];
+    // only the 10-day segment inside the default 90-day window counts
+    expect(estimateDailyConsumption(log, { now })).toBeNull();
+    // a wider window picks up all three readings: 2100 g over 110 days
+    expect(estimateDailyConsumption(log, { now, windowDays: 130 })).toBeCloseTo(19.1, 1);
+  });
+
+  it('ignores readings from the future and invalid entries', () => {
+    const log = [
+      daysAgo(10, 1000),
+      { at: new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString(), stockGrams: 100 },
+      { at: 'not-a-date', stockGrams: 500 },
+      { at: daysAgo(2, 0).at, stockGrams: NaN },
+      daysAgo(2, 800),
+    ];
+    expect(estimateDailyConsumption(log, { now })).toBe(25);
+  });
+});
+
+describe('consumptionFromBagDuration', () => {
+  it('divides the bag size by the days it lasts', () => {
+    expect(consumptionFromBagDuration(3000, 20)).toBe(150);
+    expect(consumptionFromBagDuration(150, 3)).toBe(50);
+  });
+
+  it('keeps one decimal place', () => {
+    expect(consumptionFromBagDuration(1000, 3)).toBeCloseTo(333.3, 1);
+  });
+
+  it('returns null for invalid input', () => {
+    expect(consumptionFromBagDuration(null, 10)).toBeNull();
+    expect(consumptionFromBagDuration(1000, null)).toBeNull();
+    expect(consumptionFromBagDuration(0, 10)).toBeNull();
+    expect(consumptionFromBagDuration(1000, 0)).toBeNull();
+    expect(consumptionFromBagDuration(-500, 10)).toBeNull();
+    expect(consumptionFromBagDuration(1000, -2)).toBeNull();
+    expect(consumptionFromBagDuration(NaN, 10)).toBeNull();
+    expect(consumptionFromBagDuration(1000, Infinity)).toBeNull();
+  });
+});
+
+describe('appendStockLogEntry', () => {  it('starts a new log when none exists', () => {
+    const entry = { at: '2026-11-01T00:00:00Z', stockGrams: 1200 };
+    expect(appendStockLogEntry(undefined, entry)).toEqual([entry]);
+    expect(appendStockLogEntry([], entry)).toEqual([entry]);
+  });
+
+  it('appends to the existing log', () => {
+    const log = [{ at: '2026-10-01T00:00:00Z', stockGrams: 2000 }];
+    const entry = { at: '2026-11-01T00:00:00Z', stockGrams: 1200 };
+    expect(appendStockLogEntry(log, entry)).toHaveLength(2);
+    expect(appendStockLogEntry(log, entry)[1]).toEqual(entry);
+  });
+
+  it('drops the oldest entries past maxEntries', () => {
+    const log = Array.from({ length: 60 }, (_, i) => ({
+      at: `2026-09-${String(i + 1).padStart(2, '0')}T00:00:00Z`,
+      stockGrams: 1000 + i,
+    }));
+    const entry = { at: '2026-11-01T00:00:00Z', stockGrams: 1200 };
+    const next = appendStockLogEntry(log, entry);
+    expect(next).toHaveLength(60);
+    expect(next[0].stockGrams).toBe(1001);
+    expect(next[59]).toEqual(entry);
   });
 });

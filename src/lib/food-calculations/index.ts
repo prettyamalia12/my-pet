@@ -1,4 +1,4 @@
-import type { StockUnit } from '../../types';
+import type { StockLogEntry, StockUnit } from '../../types';
 
 /** Food is considered "low" when this many (or fewer) days of food remain. */
 export const LOW_STOCK_THRESHOLD_DAYS = 5;
@@ -86,4 +86,99 @@ export function getFoodStatus(input: FoodStatusInput): FoodStatus {
 
   if (days <= threshold) return 'low';
   return 'ok';
+}
+
+// ---- consumption estimation from stock readings ---------------------------
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Daily consumption implied by a bag size and how long it lasts —
+ * the "a bag lasts me about 3 weeks" way of knowing a pet's appetite.
+ * `bagGrams` must already be converted (see toGrams). Returns null for
+ * invalid input — we never invent a number.
+ */
+export function consumptionFromBagDuration(
+  bagGrams: number | null | undefined,
+  days: number | null | undefined,
+): number | null {
+  if (!isValidNumber(bagGrams) || bagGrams <= 0) return null;
+  if (!isValidNumber(days) || days <= 0) return null;
+  return Math.round((bagGrams / days) * 10) / 10;
+}
+
+export interface EstimateConsumptionOptions {
+  /** Reference "now" — injectable for tests. Defaults to the current time. */
+  now?: Date;
+  /** Only readings within this many days of `now` are used. */
+  windowDays?: number;
+  /** Minimum elapsed days across consuming segments before we report a rate. */
+  minDaysCovered?: number;
+}
+
+function isValidLogEntry(entry: StockLogEntry): boolean {
+  return (
+    typeof entry?.at === 'string' &&
+    !Number.isNaN(new Date(entry.at).getTime()) &&
+    isValidNumber(entry.stockGrams) &&
+    entry.stockGrams >= 0
+  );
+}
+
+/**
+ * Estimate daily consumption (grams/day) from a log of stock readings.
+ *
+ * Each pair of consecutive readings where the stock went DOWN is a
+ * "consuming segment": the drop divided by the elapsed days is that
+ * segment's rate. A pair where the stock went UP or stayed flat is a
+ * restock: it breaks the chain, because the drop across a restock says
+ * nothing about how fast the food is eaten.
+ *
+ * The estimate is total grams dropped over total elapsed days across all
+ * consuming segments within the window. Returns null when there isn't
+ * enough coverage to say anything — we never invent a number.
+ */
+export function estimateDailyConsumption(
+  log: readonly StockLogEntry[] | undefined,
+  options: EstimateConsumptionOptions = {},
+): number | null {
+  if (!log || log.length < 2) return null;
+  const now = options.now ?? new Date();
+  const windowDays = options.windowDays ?? 90;
+  const minDaysCovered = options.minDaysCovered ?? 2;
+  const windowStart = now.getTime() - windowDays * DAY_MS;
+
+  const entries = log
+    .filter(isValidLogEntry)
+    .map((entry) => ({ time: new Date(entry.at).getTime(), grams: entry.stockGrams }))
+    .filter((entry) => entry.time <= now.getTime() && entry.time >= windowStart)
+    .sort((a, b) => a.time - b.time);
+
+  let consumed = 0;
+  let daysCovered = 0;
+  for (let i = 1; i < entries.length; i++) {
+    const elapsedDays = (entries[i].time - entries[i - 1].time) / DAY_MS;
+    if (elapsedDays <= 0) continue;
+    const delta = entries[i - 1].grams - entries[i].grams;
+    if (delta <= 0) continue; // restock or flat reading — the chain is broken
+    consumed += delta;
+    daysCovered += elapsedDays;
+  }
+
+  if (consumed <= 0 || daysCovered < minDaysCovered) return null;
+  return Math.round((consumed / daysCovered) * 10) / 10;
+}
+
+/**
+ * Append a stock reading to the log, keeping the log bounded so storage
+ * stays small (oldest entries drop off past `maxEntries`).
+ */
+export function appendStockLogEntry(
+  log: readonly StockLogEntry[] | undefined,
+  entry: StockLogEntry,
+  options: { maxEntries?: number } = {},
+): StockLogEntry[] {
+  const maxEntries = options.maxEntries ?? 60;
+  const next = [...(log ?? []), entry];
+  return next.length > maxEntries ? next.slice(next.length - maxEntries) : next;
 }

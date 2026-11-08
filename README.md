@@ -75,6 +75,17 @@ unit tests (`npm run test`).
 - **Missing data is never guessed.** If the stock or the consumption is missing, zero,
   negative, or not a finite number, the functions return `null` / status `'unknown'`
   and the UI asks for the data instead of inventing an estimate.
+- **Consumption estimates come from your own check-ins.** Every food update appends a
+  stock reading (`{at, stockGrams}`) to `food.log` (bounded to 60 entries). Consecutive
+  readings where the stock went *down* are consuming segments; a reading where it went
+  *up* is a restock and breaks the chain (the jump says nothing about appetite).
+  `estimateDailyConsumption` returns total grams dropped over total elapsed days across
+  segments in the last 90 days, and `null` until at least 2 days of coverage exist.
+  The estimate is *suggested* in the food form ("Use estimate") and never applied
+  silently — the run-out math keeps one clear source of truth.
+- **No scale? Estimate from the bag.** `consumptionFromBagDuration(bagGrams, days)`
+  turns "a bag lasts me about 3 weeks" into a g/day rate, offered the same way in
+  the food form. Same rule: invalid or missing input returns `null`, never a guess.
 - **Statuses:** `exhausted` (stock is exactly 0), `overdue` (the estimated run-out date
   computed from the last stock update is already in the past — the recorded stock is
   stale), `low`, `ok`, `unknown`.
@@ -120,7 +131,6 @@ with type guards on load — corrupt or outdated content falls back to seeded sa
 ## Roadmap ideas
 
 - Restock reminders (local notifications / PWA push)
-- Consumption history and automatic consumption-rate estimates
 - More species avatars (dog, rabbit, bird) built the same procedural way
 - PWA install + offline shell
 - Multiple food types per pet (dry/wet/treats)

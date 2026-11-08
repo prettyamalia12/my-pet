@@ -12,6 +12,8 @@ export interface StoredState {
 export const SAMPLE_PET_ID = 'sample-mochi';
 
 export function createSamplePet(): Pet {
+  const now = Date.now();
+  const daysAgo = (days: number) => new Date(now - days * 24 * 60 * 60 * 1000).toISOString();
   return {
     id: SAMPLE_PET_ID,
     name: 'Mochi',
@@ -30,7 +32,14 @@ export function createSamplePet(): Pet {
       stockAmount: 1.2,
       stockUnit: 'kg',
       dailyConsumptionGrams: 45,
-      updatedAt: new Date().toISOString(),
+      updatedAt: new Date(now).toISOString(),
+      // Past weigh-ins so the consumption estimate has data to work with:
+      // 450 g disappeared each 9 days → ~50 g/day, close to the 45 g/day above.
+      log: [
+        { at: daysAgo(18), stockGrams: 2100 },
+        { at: daysAgo(9), stockGrams: 1650 },
+        { at: new Date(now).toISOString(), stockGrams: 1200 },
+      ],
     },
     nextCareDate: {
       date: '2026-11-08',
@@ -105,6 +114,14 @@ export function isPet(value: unknown): value is Pet {
     return false;
   }
   if (typeof food.updatedAt !== 'string') return false;
+  if (food.log !== undefined) {
+    if (!Array.isArray(food.log)) return false;
+    for (const entry of food.log) {
+      if (!isRecord(entry)) return false;
+      if (typeof entry.at !== 'string') return false;
+      if (typeof entry.stockGrams !== 'number' || !Number.isFinite(entry.stockGrams)) return false;
+    }
+  }
 
   if (value.nextCareDate !== undefined) {
     if (!isRecord(value.nextCareDate)) return false;

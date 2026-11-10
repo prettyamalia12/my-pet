@@ -1,3 +1,5 @@
+<img width="1299" height="948" alt="image" src="https://github.com/user-attachments/assets/7c0b9c3b-8187-4e16-b228-92c5000019eb" />
+
 # 🐾 Pet Companion
 
 A frontend-only MVP that helps pet owners stop realizing *too late* that the food bag is
